@@ -6,13 +6,15 @@ import useMqttPub from "@/hooks/useMqttPub";
 import useMqttSub from "@/hooks/useMqttSub";
 const SocketCard = ({ title }) => {
     const [isSelected, setIsSelected] = useState(0);
+    const [reading, setReading] = useState({ voltage: 0, power: 0 });
     const { client } = useContext(MqttContext)
 
     const publish = useMqttPub();
     const subscribe = useMqttSub();
     useEffect(() => {
         if (client) {
-            subscribe({ topic: 'synergy/button/#' })
+            subscribe({ topic: 'synergy/button/#' });
+            subscribe({ topic: 'synergy/value' });
         }
     }, [client, subscribe])
     useEffect(() => {
@@ -22,6 +24,11 @@ const SocketCard = ({ title }) => {
                 if (channel === 'synergy/button/one') {
                     const value = parseInt(message.toString());
                     setIsSelected(!value);
+                }
+                if (channel === 'synergy/value') {
+                    const { voltage, power } = JSON.parse(message.toString());
+                    setReading({ voltage: voltage.toFixed(3), power: power.toFixed(3) });
+
                 }
             })
         }
@@ -49,12 +56,12 @@ const SocketCard = ({ title }) => {
                     </p>
                     <p className="flex justify-between">
                         <span className="text-[#7BB601]">  Voltage: </span>
-                        <span className="inline-block ml-2">20W</span>
+                        <span className="inline-block ml-2">{reading.voltage}V</span>
 
                     </p>
                     <p className="flex justify-between">
                         <span className="text-[#7BB601]">  Power: </span>
-                        <span className="inline-block ml-2">20W</span>
+                        <span className="inline-block ml-2">{reading.power}W</span>
 
                     </p>
                 </div>
