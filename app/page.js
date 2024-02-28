@@ -43,9 +43,9 @@ export default function Home() {
     <>
       <div className="mt-32">
         <div className="flex  gap-2 items-center max-w-2xl mx-auto">
-          <SocketCard title="Socket 1" />
-          {/* <SocketCard title="Socket 2" />
-          <SocketCard title="Socket 3" /> */}
+          <SocketCard title="Socket 1" id="socket1" />
+          <SocketCard title="Socket 2" id="socket2" />
+          <SocketCard title="Socket 3" id="socket3" />
         </div>
       </div>
       <div className="flex flex-col gap-y-4">

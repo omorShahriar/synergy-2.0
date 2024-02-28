@@ -4,13 +4,24 @@ import { useState, useEffect, useContext } from "react";
 import { MqttContext } from "@/hooks/MqttProvider";
 import useMqttPub from "@/hooks/useMqttPub";
 import useMqttSub from "@/hooks/useMqttSub";
-const SocketCard = ({ title }) => {
+const SocketCard = ({ title, id }) => {
     const [isSelected, setIsSelected] = useState(0);
     const [reading, setReading] = useState({ voltage: 0, power: 0 });
     const { client } = useContext(MqttContext)
 
     const publish = useMqttPub();
     const subscribe = useMqttSub();
+    const choosePower = (id) => {
+        if (id === 'socket1') {
+            return reading.power1
+        }
+        if (id === 'socket2') {
+            return reading.power2
+        }
+        if (id === 'socket3') {
+            return reading.power3
+        }
+    }
     useEffect(() => {
         if (client) {
             subscribe({ topic: 'synergy/button/#' });
@@ -22,12 +33,19 @@ const SocketCard = ({ title }) => {
             client.on('message', (topic, message) => {
                 const channel = topic.toString();
                 if (channel === 'synergy/button/one') {
-                    const value = parseInt(message.toString());
-                    setIsSelected(!value);
+                    if (id === 'socket1') {
+                        const value = parseInt(message.toString());
+                        setIsSelected(!value);
+                    }
+
                 }
                 if (channel === 'synergy/value') {
-                    const { voltage, power } = JSON.parse(message.toString());
-                    setReading({ voltage: voltage.toFixed(3), power: power.toFixed(3) });
+                    const { voltage, power1, power2, power3 } = JSON.parse(message.toString());
+                    setReading({
+                        voltage: voltage.toFixed(3), power1: power1.toFixed(3),
+                        power2: power2.toFixed(3), power3: power3.toFixed(3)
+
+                    });
 
                 }
             })
@@ -42,7 +60,7 @@ const SocketCard = ({ title }) => {
                 <div className="flex items-center justify-between gap-2 max-w-fit">
                     <p>Off</p>
                     <Switch color="success" isSelected={isSelected} onValueChange={(value) => {
-                        publish(value ? '0' : '1', 'synergy/button/one');
+                        id === 'socket1' && publish(value ? '0' : '1', 'synergy/button/one');
                         setIsSelected(value)
                     }} />
 
@@ -61,7 +79,13 @@ const SocketCard = ({ title }) => {
                     </p>
                     <p className="flex justify-between">
                         <span className="text-[#7BB601]">  Power: </span>
-                        <span className="inline-block ml-2">{reading.power}W</span>
+                        <span className="inline-block ml-2">{
+
+
+                            choosePower(id)
+
+                        }
+                            W</span>
 
                     </p>
                 </div>
